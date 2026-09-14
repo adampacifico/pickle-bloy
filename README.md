@@ -1,70 +1,88 @@
-# Getting Started with Create React App
+# Eliana's Pickleball Court & Refreshments
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A Pickleball court booking site built in React with a fresh "sunset on the
+court" theme. Visitors get a hero, an image gallery carousel, upcoming
+events, and a 4-step booking flow across two courts. The admin area lives on
+its own guarded route (`/admin`) and is **built to be plugged into a real
+backend** — the data and auth layers are already split into swap-ready
+services.
 
-## Available Scripts
+Built with **React 19** (Create React App) + **React Router 6**. No backend
+yet: bookings and the admin passcode currently persist in `localStorage`.
 
-In the project directory, you can run:
+## Run it
 
-### `npm start`
+```bash
+npm start       # dev server → http://localhost:3000
+npm run build   # production bundle to /build
+npm test        # run the test suite
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Routes
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+| Route    | What it is                                              |
+| -------- | ------------------------------------------------------- |
+| `/`      | Public page — hero, gallery, booking wizard, events, schedule |
+| `/admin` | Guarded admin — passcode login, then the bookings table |
 
-### `npm test`
+Admin demo passcode: `eliana123` (change it in `src/constants.js`).
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## What's inside
 
-### `npm run build`
+| Path                                   | What it does                                                   |
+| -------------------------------------- | -------------------------------------------------------------- |
+| `src/constants.js`                     | All config: courts, off-peak/peak ₱ rates, hero copy, gallery, events, passcode |
+| `src/services/bookingsApi.js`          | **Data layer** — async get/create/update bookings (swap point for a real API) |
+| `src/services/auth.js`                 | **Auth layer** — async login/logout/check (swap point for real auth) |
+| `src/context/BookingsContext.js`       | Shares one bookings list across the public + admin pages       |
+| `src/pages/PublicPage.js` / `AdminPage.js` | The two routes                                            |
+| `src/components/Gallery.js`            | Auto-rotating image carousel (arrows + dots)                   |
+| `src/components/Events.js`             | Upcoming events cards                                          |
+| `src/components/booking/`              | The 4-step wizard (state machine + step components)            |
+| `src/components/ScheduleSection.js`    | Month-by-month calendar with per-day, per-court availability   |
+| `src/components/AdminBookings.js`      | Bookings table with stats + "mark paid" action                 |
+| `src/App.js`                           | Router + shared provider wrapping everything                   |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## How a booking flows
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. **Details** — name + phone (validated inline).
+2. **Court & Time** — pick a date, court, and one or more hourly slots.
+   Slots already booked are greyed out and disabled.
+3. **Payment** — cash, GCash or bank transfer (+ payment proof upload).
+   The total is the sum of each slot's rate: **₱100/hr off-peak (6AM–5PM)**
+   and **₱200/hr peak (5PM–9PM)**, shown as an itemized breakdown.
+4. **Confirmed** — animated check + full receipt.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The booking is created through `bookingsApi.createBooking()` (via the shared
+context), so it instantly shows up in the hero stats, schedule calendar, and
+admin table.
 
-### `npm run eject`
+## Adding a real backend
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- **Bookings** — open `src/services/bookingsApi.js` and replace the
+  localStorage bodies with `fetch()` calls (examples are in the file header).
+  No component changes needed.
+- **Auth** — open `src/services/auth.js` and swap the passcode check for a
+  token-based login (example in the file header). The `/admin` route stays
+  guarded the same way.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Easy tweaks (all in `src/constants.js`)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- **Hero copy** — edit the `HERO` object (headline, tagline, subtitle, CTAs).
+- **Gallery photos** — replace the `GALLERY.items` image URLs with real photos.
+- **Events** — edit the `EVENTS.items` list.
+- **Rates** — edit `OFF_PEAK_PRICE` / `PEAK_PRICE` / `PEAK_START_HOUR`.
+- **Admin passcode** — edit `ADMIN_PASSCODE`.
+- **Courts / payment methods** — extend the arrays in the same file.
+- **Reset demo data** — clear the `eliana-court-bookings-v1` key in your
+  browser's localStorage (or use incognito mode).
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Structure notes
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Components are small, named after their job, and read data through the
+  shared context — no prop drilling.
+- Styles use CSS variables (in `src/index.css`) so the whole palette can
+  be re-themed from one place; `src/App.css` is organized top-to-bottom
+  in the same order as the UI.
+- Motion is decorative only, respects `prefers-reduced-motion`, and the
+  site is fully responsive down to ~360px wide screens.

@@ -1,25 +1,28 @@
-import logo from './logo.svg';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BookingsProvider } from './context/BookingsContext';
+import ScrollToTop from './components/ScrollToTop';
+import PublicPage from './pages/PublicPage';
+import AdminPage from './pages/AdminPage';
 import './App.css';
 
-function App() {
+/**
+ * Eliana's Pickleball Court & Refreshments.
+ *
+ * Routing + one shared BookingsProvider wrap every page, so the public
+ * booking flow and the guarded admin area read from the same data layer
+ * (see src/services/bookingsApi.js — the swap point for a real backend).
+ */
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ScrollToTop />
+      <BookingsProvider>
+        <Routes>
+          <Route path="/" element={<PublicPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BookingsProvider>
+    </BrowserRouter>
   );
 }
-
-export default App;
