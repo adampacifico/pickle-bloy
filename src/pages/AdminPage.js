@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { getSession, onAuthStateChange } from '../services/auth';
 import AdminHeader from '../components/admin/AdminHeader';
 import AdminBookings from '../components/AdminBookings';
+import ScheduleSection from '../components/ScheduleSection';
 
 export default function AdminPage() {
   const [session, setSession] = useState(null);
@@ -26,6 +27,7 @@ export default function AdminPage() {
     <div className="app">
       <AdminHeader />
       <main>
+        <ScheduleSection />
         <AdminBookings />
       </main>
     </div>

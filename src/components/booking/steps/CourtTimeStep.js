@@ -17,6 +17,12 @@ import { getActiveCourts } from '../../../services/courtService';
 
 const COURT_COLORS = ['#3ecf7a', '#ff6b35', '#4da3ff', '#d88cff'];
 
+function slotRangeLabel(slot) {
+  const hour = Number(slot.slice(0, 2));
+  const nextHour = String((hour + 1) % 24).padStart(2, '0');
+  return `${slotLabel(slot)} - ${slotLabel(`${nextHour}:00`)}`;
+}
+
 /**
  * Step 2 - pick a date, a court, then one or more hourly slots.
  * Booked slots come from the shared `bookings` list, so if anything
@@ -149,7 +155,7 @@ export default function CourtTimeStep({ form, update, bookings, showErrors }) {
                   disabled={isConfirmed}
                   onClick={() => toggleSlot(slot)}
                 >
-                  <span className="slot__time">{slotLabel(slot)}</span>
+                  <span className="slot__time">{slotRangeLabel(slot)}</span>
                   <span className="slot__state">
                     {isSelected ? 'Selected' : isConfirmed ? 'Confirmed' : isPending ? 'Pending' : `Open - ${formatMoney(priceForSlot(slot))}`}
                   </span>
@@ -187,7 +193,7 @@ export default function CourtTimeStep({ form, update, bookings, showErrors }) {
           <ul className="selection-card__list">
             {form.slots.map((slot) => (
               <li key={slot}>
-                <span>{slotLabel(slot)}</span>
+                <span>{slotRangeLabel(slot)}</span>
                 <button
                   type="button"
                   className="selection-card__remove"

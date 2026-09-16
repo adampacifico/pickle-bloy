@@ -1,0 +1,5 @@
+﻿"#","Name","Phone","Court","Date","Time","Payment","Amount","Status"
+"1","adada","112121212","Court 1","Thu, Sep 17","7:00 AM, 8:00 AM","Cash on arrival","₱200","Pending"
+"2","John Fred Catajay","09619074853","Court 2","Fri, Sep 18","5:00 PM, 6:00 PM, 7:00 PM, 8:00 PM, 9:00 PM, 10:00 PM","Cash on arrival","₱1,200","Confirmed"
+"3","John Fred Catajay","09619074853","Court 1","Fri, Sep 18","5:00 PM, 6:00 PM, 7:00 PM, 8:00 PM, 9:00 PM, 10:00 PM","Cash on arrival","₱1,200","Confirmed"
+"4","John Fred","09123456789","Court 1","Wed, Sep 16","6:00 PM, 7:00 PM","GCash","₱400","Confirmed"

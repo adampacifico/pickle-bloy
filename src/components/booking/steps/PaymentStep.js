@@ -17,7 +17,7 @@ export default function PaymentStep({ form, update, showErrors }) {
   const offPeakTotal = offPeakCount * OFF_PEAK_PRICE;
   const peakTotal = peakCount * PEAK_PRICE;
   const total = priceForSlots(form.slots);
-  const needsProof = form.paymentMethod === 'gcash' || form.paymentMethod === 'bank';
+  const needsProof = form.paymentMethod === 'gcash';
   const proofOk = !needsProof || Boolean(form.proofFile);
   const courtLabel = form.courtLabel || 'Selected court';
 
@@ -54,14 +54,16 @@ export default function PaymentStep({ form, update, showErrors }) {
         {PAYMENT_METHODS.map((method) => {
           const isActive = form.paymentMethod === method.id;
           return (
+            <div className={`pay-method-option pay-method-option--${method.id}`} key={method.id}>
             <button
-              key={method.id}
               type="button"
               className={`pay-method ${isActive ? 'pay-method--active' : ''}`}
               onClick={() => update({ paymentMethod: method.id, proofFile: null, proofFileName: '' })}
             >
               <span className="pay-method__icon" aria-hidden="true">
-                {method.icon}
+                {method.id === 'gcash' ? (
+                  <img src="/gcash-com-logo.png" alt="" />
+                ) : method.icon}
               </span>
               <span className="pay-method__copy">
                 <strong>{method.label}</strong>
@@ -69,6 +71,13 @@ export default function PaymentStep({ form, update, showErrors }) {
               </span>
               <span className="pay-method__radio" aria-hidden="true" />
             </button>
+            {isActive && method.id === 'gcash' && (
+              <div className="gcash-qr">
+                <p>Scan to pay with GCash</p>
+                <img src="/qr.png" alt="GCash payment QR code" />
+              </div>
+            )}
+            </div>
           );
         })}
       </div>

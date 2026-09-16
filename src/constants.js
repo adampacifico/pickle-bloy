@@ -35,7 +35,6 @@ export const BOOKING_DAYS_AHEAD = 14;
 export const PAYMENT_METHODS = [
   { id: 'cash', label: 'Cash on arrival', hint: 'Pay when you get to the court.', icon: '💵' },
   { id: 'gcash', label: 'GCash', hint: 'Attach a screenshot as payment proof.', icon: '📱' },
-  { id: 'bank', label: 'Bank transfer', hint: 'Attach a screenshot as payment proof.', icon: '🏦' },
 ];
 
 /** localStorage key holding every booking. */
@@ -79,16 +78,15 @@ export const HERO = {
   secondaryCta: { label: 'View schedule', href: '#schedule' },
 };
 
-/** Gallery carousel — swap the picsum placeholder URLs for real photos. */
+/** Gallery carousel images from the local public folder. */
 export const GALLERY = {
   eyebrow: 'The Club',
   title: 'Take a look around',
   subtitle: 'Two courts, one vibe — cold drinks waiting courtside.',
   items: [
-    { src: 'https://picsum.photos/seed/eliana-court-1/1200/700', caption: 'Court 1 under the afternoon sun' },
-    { src: 'https://picsum.photos/seed/eliana-court-2/1200/700', caption: 'Friday night open play under the lights' },
-    { src: 'https://picsum.photos/seed/eliana-social/1200/700', caption: 'Refreshments after the rally' },
-    { src: 'https://picsum.photos/seed/eliana-clinic/1200/700', caption: 'Learn-to-Play clinic in full swing' },
+    { src: '/images/img1.jpeg', caption: 'Court 1 under the afternoon sun' },
+    { src: '/images/img2.png', caption: 'Court 2 beautiful under the afternoon sun' },
+    { src: '/images/img3.png', caption: 'Refreshments after the rally' },
   ],
 };
 

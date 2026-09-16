@@ -4,6 +4,10 @@ import { useBookings } from '../context/BookingsContext';
 import { formatLongDate, formatMoney, slotLabel } from '../utils/dateHelpers';
 import PaymentProofModal from './PaymentProofModal';
 
+function escapeCsv(value) {
+  return `"${String(value ?? '').replace(/"/g, '""')}"`;
+}
+
 /**
  * Admin overview: every booking as a sortable table, newest first.
  * Pending bookings can be marked as confirmed right from the row.
@@ -12,7 +16,11 @@ import PaymentProofModal from './PaymentProofModal';
 export default function AdminBookings() {
   const { bookings, confirmBooking } = useBookings();
   const [selectedProof, setSelectedProof] = useState(null);
+  const [page, setPage] = useState(1);
   const sorted = [...bookings].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const pageSize = 15;
+  const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const visibleBookings = sorted.slice((page - 1) * pageSize, page * pageSize);
 
   const confirmed = sorted.filter((b) => b.status === 'confirmed').length;
   const pending = sorted.filter((b) => b.status === 'pending').length;
@@ -27,6 +35,29 @@ export default function AdminBookings() {
     { value: formatMoney(revenue), label: 'collected' },
   ];
 
+  const exportBookings = () => {
+    const headers = ['#', 'Name', 'Phone', 'Court', 'Date', 'Time', 'Payment', 'Amount', 'Status'];
+    const rows = sorted.map((booking, index) => [
+      index + 1,
+      booking.name,
+      booking.phone,
+      booking.courtLabel,
+      formatLongDate(booking.date),
+      booking.slots.map(slotLabel).join(', '),
+      PAYMENT_METHODS.find((method) => method.id === booking.paymentMethod)?.label || booking.paymentMethod,
+      formatMoney(booking.amount),
+      STATUS_LABELS[booking.status] || booking.status,
+    ]);
+    const csv = [headers, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\r\n');
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `bookings-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <section className="section admin" id="admin">
       <div className="section__head">
@@ -35,6 +66,9 @@ export default function AdminBookings() {
         <p className="section__sub">
           Every reservation, newest first. Review payment proofs and confirm bookings.
         </p>
+        <button type="button" className="btn btn--ghost btn--sm" onClick={exportBookings}>
+          Export to Excel
+        </button>
       </div>
 
       <div className="admin__stats">
@@ -71,7 +105,7 @@ export default function AdminBookings() {
                 </td>
               </tr>
             )}
-            {sorted.map((booking, index) => {
+            {visibleBookings.map((booking, index) => {
               // Fall back gracefully in case a booking references an old court id.
               const court =
                 COURTS.find((c) => c.id === booking.courtId) ??
@@ -79,7 +113,7 @@ export default function AdminBookings() {
               const method = PAYMENT_METHODS.find((m) => m.id === booking.paymentMethod);
               return (
                 <tr key={booking.id}>
-                  <td>{index + 1}</td>
+                  <td>{(page - 1) * pageSize + index + 1}</td>
                   <td className="admin-table__name">{booking.name}</td>
                   <td>{booking.phone}</td>
                   <td className="admin-table__court">
@@ -117,6 +151,27 @@ export default function AdminBookings() {
           </tbody>
         </table>
       </div>
+      {sorted.length > pageSize && (
+        <div className="admin-pagination" aria-label="Bookings pagination">
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm"
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            disabled={page === 1}
+          >
+            Previous
+          </button>
+          <span>Page {page} of {pageCount}</span>
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm"
+            onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+            disabled={page === pageCount}
+          >
+            Next
+          </button>
+        </div>
+      )}
       {selectedProof && <PaymentProofModal proof={selectedProof} onClose={() => setSelectedProof(null)} />}
     </section>
   );

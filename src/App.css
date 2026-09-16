@@ -1119,6 +1119,11 @@ main {
   gap: 8px;
   margin-bottom: 20px;
 }
+.pay-method-option {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .pay-method {
   display: flex;
   align-items: center;
@@ -1132,6 +1137,12 @@ main {
   cursor: pointer;
   transition: all 0.15s ease;
 }
+.pay-method-option--cash .pay-method__copy strong {
+  color: var(--green);
+}
+.pay-method-option--gcash .pay-method__copy strong {
+  color: #4da3ff;
+}
 .pay-method:hover {
   border-color: var(--border-strong);
 }
@@ -1140,9 +1151,26 @@ main {
   background: var(--accent-soft);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
+.pay-method-option--cash .pay-method--active {
+  border-color: var(--green);
+  background: rgba(62, 207, 122, 0.12);
+  box-shadow: 0 0 0 3px rgba(62, 207, 122, 0.12);
+}
+.pay-method-option--gcash .pay-method--active {
+  border-color: #4da3ff;
+  background: rgba(77, 163, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.12);
+}
 .pay-method__icon {
   font-size: 22px;
   line-height: 1;
+}
+.pay-method__icon img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
 }
 .pay-method__copy {
   display: flex;
@@ -1174,6 +1202,28 @@ main {
   inset: 3px;
   border-radius: 50%;
   background: var(--accent);
+}
+.gcash-qr {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(77, 163, 255, 0.45);
+  border-radius: var(--radius-sm);
+  background: rgba(77, 163, 255, 0.06);
+}
+.gcash-qr p {
+  margin: 0;
+  color: #4da3ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.gcash-qr img {
+  width: 200px;
+  height: 200px;
+  padding: 6px;
+  background: #fff;
+  border-radius: 6px;
 }
 
 /* Upload proof */
@@ -1568,15 +1618,15 @@ main {
   font-weight: 600;
 }
 .admin-table__court {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   white-space: nowrap;
 }
 .admin-table__dot {
+  display: inline-block;
   width: 10px;
   height: 10px;
+  margin-right: 4px;
   border-radius: 50%;
+  vertical-align: middle;
 }
 .admin-table__proof {
   margin-left: 6px;
@@ -1599,6 +1649,15 @@ main {
   text-align: center;
   padding: 40px 20px;
   color: var(--muted);
+}
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 0 4px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 /* ============================================================
