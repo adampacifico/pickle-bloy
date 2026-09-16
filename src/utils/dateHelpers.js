@@ -3,7 +3,7 @@
  * so they are trivial to unit test and reuse.
  */
 
-import { CURRENCY, SLOT_END_HOUR, SLOT_START_HOUR } from '../constants';
+import { CURRENCY, SLOT_START_HOUR } from '../constants';
 
 export const WEEKDAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const MONTHS = [
