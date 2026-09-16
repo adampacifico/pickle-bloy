@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   BOOKING_DAYS_AHEAD,
   OFF_PEAK_PRICE,
