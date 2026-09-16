@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { COURTS, PAYMENT_METHODS, STATUS_LABELS } from '../constants';
 import { useBookings } from '../context/BookingsContext';
 import { formatLongDate, formatMoney, slotLabel } from '../utils/dateHelpers';
+import PaymentProofModal from './PaymentProofModal';
 
 /**
  * Admin overview: every booking as a sortable table, newest first.
@@ -8,7 +10,8 @@ import { formatLongDate, formatMoney, slotLabel } from '../utils/dateHelpers';
  * Reads bookings from the shared context (backed by the data layer).
  */
 export default function AdminBookings() {
-  const { bookings, toggleStatus } = useBookings();
+  const { bookings, confirmBooking } = useBookings();
+  const [selectedProof, setSelectedProof] = useState(null);
   const sorted = [...bookings].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   const confirmed = sorted.filter((b) => b.status === 'confirmed').length;
@@ -30,7 +33,7 @@ export default function AdminBookings() {
         <p className="section__eyebrow">Admin</p>
         <h2 className="section__title">Admin bookings</h2>
         <p className="section__sub">
-          Every reservation, newest first. Tap “mark paid” to confirm a booking.
+          Every reservation, newest first. Review payment proofs and confirm bookings.
         </p>
       </div>
 
@@ -54,14 +57,16 @@ export default function AdminBookings() {
               <th>Date</th>
               <th>Time</th>
               <th>Payment</th>
+              <th>Uploaded payment</th>
               <th>Amount</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {sorted.length === 0 && (
               <tr className="admin-table__empty">
-                <td colSpan={9}>
+                <td colSpan={11}>
                   No bookings yet. Once someone books a court, it'll show up here.
                 </td>
               </tr>
@@ -85,25 +90,24 @@ export default function AdminBookings() {
                   <td>{booking.slots.map(slotLabel).join(', ')}</td>
                   <td>
                     {method.label}
-                    {booking.proofFile && (
-                      <span className="admin-table__proof" title={booking.proofFile}>
-                        📎
-                      </span>
-                    )}
+                  </td>
+                  <td>
+                    {booking.proofFile ? (
+                      <button type="button" className="text-btn" onClick={() => setSelectedProof(booking.proofFile)}>
+                        View image
+                      </button>
+                    ) : '—'}
                   </td>
                   <td>{formatMoney(booking.amount)}</td>
                   <td className="admin-table__status">
                     <span className={`badge badge--${booking.status}`}>
                       {STATUS_LABELS[booking.status]}
                     </span>
+                  </td>
+                  <td>
                     {booking.status === 'pending' && (
-                      <button
-                        type="button"
-                        className="text-btn"
-                        onClick={() => toggleStatus(booking.id)}
-                        title="Mark as confirmed"
-                      >
-                        mark paid
+                      <button type="button" className="text-btn" onClick={() => confirmBooking(booking.id)}>
+                        Confirm
                       </button>
                     )}
                   </td>
@@ -113,6 +117,7 @@ export default function AdminBookings() {
           </tbody>
         </table>
       </div>
+      {selectedProof && <PaymentProofModal proof={selectedProof} onClose={() => setSelectedProof(null)} />}
     </section>
   );
 }

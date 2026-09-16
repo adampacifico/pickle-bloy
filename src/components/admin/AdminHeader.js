@@ -1,13 +1,15 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../Logo';
 import { BRAND_SHORT } from '../../constants';
 import { logout } from '../../services/auth';
 
 /** Slim top bar for the admin area with a quick exit back to the site. */
-export default function AdminHeader({ onLogout }) {
+export default function AdminHeader() {
+  const navigate = useNavigate();
+
   const handleLogout = async () => {
     await logout();
-    onLogout();
+    navigate('/admin/login', { replace: true });
   };
 
   return (

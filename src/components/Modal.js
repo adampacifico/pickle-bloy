@@ -27,6 +27,7 @@ export default function Modal({ booking, onClose }) {
     ['Booking ID', booking.id],
     ['Name', booking.name],
     ['Phone', booking.phone],
+    ['Email', booking.email || '—'],
     ['Court', booking.courtLabel],
     ['Date', formatLongDate(booking.date)],
     ['Time', booking.slots.map(slotLabel).join(' · ')],

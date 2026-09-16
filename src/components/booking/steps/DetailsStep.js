@@ -41,6 +41,18 @@ export default function DetailsStep({ form, update, showErrors }) {
         )}
       </label>
 
+      <label className="field">
+        <span className="field__label">Email (optional)</span>
+        <input
+          className="input"
+          type="email"
+          value={form.email}
+          placeholder="e.g. name@example.com"
+          autoComplete="email"
+          onChange={(e) => update({ email: e.target.value })}
+        />
+      </label>
+
       <p className="step-card__hint">
         We use these details to confirm your slot and reach you on the day.
       </p>

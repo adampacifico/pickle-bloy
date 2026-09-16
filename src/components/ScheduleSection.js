@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { COURTS } from '../constants';
+import { useEffect, useState } from 'react';
 import { useBookings } from '../context/BookingsContext';
+import { getActiveCourts } from '../services/courtService';
+import ScheduleModal from './ScheduleModal';
 import {
   WEEKDAYS_SHORT,
   formatLongDate,
@@ -10,6 +11,8 @@ import {
   slotLabel,
   toISODate,
 } from '../utils/dateHelpers';
+
+const COURT_COLORS = ['#3ecf7a', '#ff6b35', '#4da3ff', '#d88cff'];
 
 /** Helper: number of bookings on a given date, possibly 0. */
 const countFor = (byDate, iso) => (byDate.get(iso) ?? []).length;
@@ -21,11 +24,26 @@ const countFor = (byDate, iso) => (byDate.get(iso) ?? []).length;
  * wizard and the admin table.
  */
 export default function ScheduleSection() {
-  const { bookings } = useBookings();
+  const { bookings, loading: bookingsLoading, error: bookingsError } = useBookings();
+  const [courts, setCourts] = useState([]);
+  const [courtsLoading, setCourtsLoading] = useState(true);
+  const [courtsError, setCourtsError] = useState('');
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState(toISODate(today));
+  const [modalDate, setModalDate] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    getActiveCourts()
+      .then((data) => mounted && setCourts(data))
+      .catch((error) => mounted && setCourtsError(error.message || 'Unable to load courts.'))
+      .finally(() => mounted && setCourtsLoading(false));
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const cells = monthMatrix(year, month);
 
@@ -88,8 +106,10 @@ export default function ScheduleSection() {
               }
               const bookingsCount = countFor(byDate, cell.iso);
               const dayBookingsOnCell = byDate.get(cell.iso) ?? [];
-              const dots = COURTS.filter((court) =>
-                dayBookingsOnCell.some((b) => b.courtId === court.id)
+              const pendingCount = dayBookingsOnCell.filter((booking) => booking.status === 'pending').length;
+              const confirmedCount = dayBookingsOnCell.filter((booking) => booking.status === 'confirmed').length;
+              const dots = courts.filter((court) =>
+                dayBookingsOnCell.some((b) => String(b.courtId) === String(court.id))
               );
 
               return (
@@ -97,15 +117,21 @@ export default function ScheduleSection() {
                   key={cell.iso}
                   type="button"
                   className={`calendar__cell ${selectedDate === cell.iso ? 'is-selected' : ''} ${isToday(cell.iso) ? 'is-today' : ''}`}
-                  onClick={() => setSelectedDate(cell.iso)}
+                  onClick={() => {
+                    setSelectedDate(cell.iso);
+                    setModalDate(cell.iso);
+                  }}
                 >
                   <span className="calendar__day">{cell.day}</span>
                   {bookingsCount > 0 && (
-                    <span className="calendar__booked-count">{bookingsCount} booked</span>
+                    <span className="calendar__booked-count">
+                      {pendingCount > 0 && <b className="calendar__status calendar__status--pending">{pendingCount} pending</b>}
+                      {confirmedCount > 0 && <b className="calendar__status calendar__status--confirmed">{confirmedCount} confirmed</b>}
+                    </span>
                   )}
                   <span className="calendar__dots" aria-hidden="true">
                     {dots.map((court) => (
-                      <i key={court.id} style={{ background: court.color }} />
+                      <i key={court.id} style={{ background: COURT_COLORS[courts.indexOf(court) % COURT_COLORS.length] }} />
                     ))}
                   </span>
                 </button>
@@ -116,31 +142,51 @@ export default function ScheduleSection() {
 
         <aside className="day-board" aria-label={`Slots for ${formatLongDate(selectedDate)}`}>
           <h3 className="day-board__title">{formatLongDate(selectedDate)}</h3>
-          {COURTS.map((court) => {
-            const booked = dayBookings.filter((b) => b.courtId === court.id);
-            const times = booked.flatMap((b) => b.slots.map(slotLabel));
+          {courts.map((court, index) => {
+            const booked = dayBookings.filter((b) => String(b.courtId) === String(court.id));
+            const times = [...new Set(booked.flatMap((b) => b.slots.map(slotLabel)))];
             return (
               <div className="day-board__court" key={court.id}>
                 <div className="day-board__court-head">
-                  <span className="day-board__dot" style={{ background: court.color }} />
+                  <span className="day-board__dot" style={{ background: COURT_COLORS[index % COURT_COLORS.length] }} />
                   {court.label}
                 </div>
                 {times.length === 0 ? (
                   <p className="day-board__open">Open all day — book it!</p>
                 ) : (
                   <ul className="day-board__times">
-                    {times.map((time) => (
-                      <li key={time} className="day-board__time">
-                        {time}
-                      </li>
-                    ))}
+                    {times.map((time) => {
+                      const booking = booked.find((item) => item.slots.map(slotLabel).includes(time));
+                      return (
+                        <li key={time} className={`day-board__time day-board__time--${booking?.status || 'open'}`}>
+                          <span>{time}</span>
+                          <small>{booking?.status || 'open'}</small>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
             );
           })}
+          {(bookingsLoading || courtsLoading) && <p className="day-board__open">Loading schedule...</p>}
+          {!bookingsLoading && !courtsLoading && (bookingsError || courtsError) && (
+            <p className="field__error">{bookingsError || courtsError}</p>
+          )}
+          {!bookingsLoading && !courtsLoading && !bookingsError && !courtsError && courts.length === 0 && (
+            <p className="day-board__open">No active courts available.</p>
+          )}
         </aside>
       </div>
+      {modalDate && !courtsLoading && !courtsError && (
+        <ScheduleModal
+          date={modalDate}
+          courts={courts}
+          bookings={byDate.get(modalDate) ?? []}
+          courtColors={COURT_COLORS}
+          onClose={() => setModalDate(null)}
+        />
+      )}
     </section>
   );
 }

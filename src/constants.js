@@ -25,9 +25,9 @@ export const COURTS = [
   { id: 'court-2', label: 'Court 2', color: '#ff6b35' },
 ];
 
-/** Playing hours are hourly slots, 6:00 AM through 9:00 PM. */
+/** Playing hours are hourly slots, 6:00 AM through 6:00 AM (24 hours). */
 export const SLOT_START_HOUR = 6;
-export const SLOT_END_HOUR = 21; // last slot starts 9:00 PM
+export const SLOT_END_HOUR = 30; // wraps past midnight to cover a full 24h cycle
 
 /** How many future days a player can book in advance. */
 export const BOOKING_DAYS_AHEAD = 14;
@@ -47,9 +47,15 @@ export const STATUS_LABELS = {
   cancelled: 'Cancelled',
 };
 
-/** Hourly rate for one "HH:00" slot (off-peak vs peak). */
+/** Hourly rate for one "HH:00" slot (off-peak vs peak).
+ * 6AM–5PM (hours 6–11 and 12–16) → ₱100; 5PM–6AM (hours 17–23 and 0–5) → ₱200.
+ */
 export function priceForSlot(slot) {
-  return Number(slot.slice(0, 2)) >= PEAK_START_HOUR ? PEAK_PRICE : OFF_PEAK_PRICE;
+  const hour = Number(slot.slice(0, 2));
+  // Normalize hour to 0-23 range for 24-hour slots
+  const normalizedHour = hour >= 24 ? hour - 24 : hour;
+  // Peak: 5PM (17) through 6AM (5 next day); off-peak: 6AM (6) through 5PM (16).
+  return (normalizedHour >= 17 || normalizedHour < 6) ? PEAK_PRICE : OFF_PEAK_PRICE;
 }
 
 /** Total rate for a list of slots (each slot is billed at its own rate). */

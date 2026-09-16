@@ -12,6 +12,7 @@ export default function ConfirmedStep({ booking, onReset, onViewBooking }) {
     ['Booking ID', booking.id],
     ['Name', booking.name],
     ['Phone', booking.phone],
+    ['Email', booking.email || '—'],
     ['Court', booking.courtLabel],
     ['Date', formatLongDate(booking.date)],
     ['Time', booking.slots.map(slotLabel).join(' · ')],

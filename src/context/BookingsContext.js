@@ -12,14 +12,21 @@ const BookingsContext = createContext(null);
 export function BookingsProvider({ children }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let mounted = true;
-    bookingsApi.getBookings().then((data) => {
-      if (!mounted) return;
-      setBookings(data);
-      setLoading(false);
-    });
+    bookingsApi.getBookings()
+      .then((data) => {
+        if (!mounted) return;
+        setBookings(data);
+      })
+      .catch((loadError) => {
+        if (mounted) setError(loadError.message || 'Unable to load bookings.');
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
     return () => {
       mounted = false;
     };
@@ -31,16 +38,13 @@ export function BookingsProvider({ children }) {
     return created;
   };
 
-  const toggleStatus = async (id) => {
-    const target = bookings.find((b) => b.id === id);
-    if (!target) return;
-    const status = target.status === 'pending' ? 'confirmed' : 'pending';
-    const updated = await bookingsApi.updateBookingStatus(id, status);
+  const confirmBooking = async (id) => {
+    const updated = await bookingsApi.updateBookingStatus(id, 'confirmed');
     setBookings((current) => current.map((b) => (b.id === id ? updated : b)));
   };
 
   return (
-    <BookingsContext.Provider value={{ bookings, loading, createBooking, toggleStatus }}>
+    <BookingsContext.Provider value={{ bookings, loading, error, createBooking, confirmBooking }}>
       {children}
     </BookingsContext.Provider>
   );

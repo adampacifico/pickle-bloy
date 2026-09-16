@@ -1,5 +1,4 @@
 import {
-  COURTS,
   OFF_PEAK_PRICE,
   PAYMENT_METHODS,
   PEAK_PRICE,
@@ -10,8 +9,7 @@ import { formatLongDate, formatMoney, slotLabel } from '../../../utils/dateHelpe
 
 /**
  * Step 3 — choose a payment method.
- * GCash / bank transfer ask for an uploaded proof (file name only,
- * kept in local state as a demo).
+ * GCash / bank transfer ask for an uploaded proof image.
  */
 export default function PaymentStep({ form, update, showErrors }) {
   const offPeakCount = form.slots.filter((s) => priceForSlot(s) === OFF_PEAK_PRICE).length;
@@ -21,7 +19,7 @@ export default function PaymentStep({ form, update, showErrors }) {
   const total = priceForSlots(form.slots);
   const needsProof = form.paymentMethod === 'gcash' || form.paymentMethod === 'bank';
   const proofOk = !needsProof || Boolean(form.proofFile);
-  const court = COURTS.find((c) => c.id === form.courtId);
+  const courtLabel = form.courtLabel || 'Selected court';
 
   return (
     <div className="step-card">
@@ -30,7 +28,7 @@ export default function PaymentStep({ form, update, showErrors }) {
       {/* Mini confirmation of what the player is paying for */}
       <div className="payment-summary">
         <p>
-          <strong>{court.label}</strong> · {formatLongDate(form.date)}
+          <strong>{courtLabel}</strong> · {formatLongDate(form.date)}
         </p>
         <p>
           {form.slots.map(slotLabel).join(' · ')} — {form.slots.length} hr
@@ -43,7 +41,7 @@ export default function PaymentStep({ form, update, showErrors }) {
         )}
         {peakCount > 0 && (
           <p className="payment-summary__line">
-            Peak (5PM–9PM): {peakCount} hr × {formatMoney(PEAK_PRICE)} ={' '}
+            Peak (5PM–6AM): {peakCount} hr × {formatMoney(PEAK_PRICE)} ={' '}
             {formatMoney(peakTotal)}
           </p>
         )}
@@ -60,7 +58,7 @@ export default function PaymentStep({ form, update, showErrors }) {
               key={method.id}
               type="button"
               className={`pay-method ${isActive ? 'pay-method--active' : ''}`}
-              onClick={() => update({ paymentMethod: method.id, proofFile: null })}
+              onClick={() => update({ paymentMethod: method.id, proofFile: null, proofFileName: '' })}
             >
               <span className="pay-method__icon" aria-hidden="true">
                 {method.icon}
@@ -81,15 +79,25 @@ export default function PaymentStep({ form, update, showErrors }) {
           <span className="proof__copy">
             <strong>Upload payment proof</strong>
             <small className={`proof__file ${form.proofFile ? 'proof__file--set' : ''}`}>
-              {form.proofFile || 'No file selected'}
+              {form.proofFileName || 'No file selected'}
             </small>
           </span>
           <input
             type="file"
-            accept="image/*,.pdf"
+            accept="image/*"
             onChange={(e) => {
               const file = e.target.files && e.target.files[0];
-              update({ proofFile: file ? file.name : null });
+              if (!file) {
+                update({ proofFile: null, proofFileName: '' });
+                return;
+              }
+              if (file.size > 5 * 1024 * 1024) {
+                update({ proofFile: null, proofFileName: 'Image must be 5 MB or smaller' });
+                return;
+              }
+              const reader = new FileReader();
+              reader.onload = () => update({ proofFile: reader.result, proofFileName: file.name });
+              reader.readAsDataURL(file);
             }}
           />
         </label>

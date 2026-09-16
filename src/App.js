@@ -1,8 +1,10 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { BookingsProvider } from './context/BookingsContext';
 import ScrollToTop from './components/ScrollToTop';
 import PublicPage from './pages/PublicPage';
 import AdminPage from './pages/AdminPage';
+import AdminLogin from './components/admin/AdminLogin';
+import ResetPassword from './components/admin/ResetPassword';
 import './App.css';
 
 /**
@@ -20,9 +22,16 @@ export default function App() {
         <Routes>
           <Route path="/" element={<PublicPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin/reset-password" element={<ResetPassword />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BookingsProvider>
     </BrowserRouter>
   );
+}
+
+function AdminLoginPage() {
+  const navigate = useNavigate();
+  return <AdminLogin onSuccess={() => navigate('/admin', { replace: true })} />;
 }

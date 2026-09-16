@@ -4,18 +4,21 @@ import DetailsStep from './steps/DetailsStep';
 import CourtTimeStep from './steps/CourtTimeStep';
 import PaymentStep from './steps/PaymentStep';
 import ConfirmedStep from './steps/ConfirmedStep';
-import { COURTS, priceForSlots } from '../../constants';
+import { priceForSlots } from '../../constants';
 import { useBookings } from '../../context/BookingsContext';
 import { makeBookingId } from '../../utils/dateHelpers';
 
 const EMPTY_FORM = () => ({
   name: '',
   phone: '',
-  courtId: COURTS[0].id,
+  email: '',
+  courtId: null,
+  courtLabel: '',
   date: null,
   slots: [],
   paymentMethod: null,
   proofFile: null,
+  proofFileName: '',
 });
 
 const NEXT_LABELS = [
@@ -72,8 +75,9 @@ export default function BookingWizard({ onViewBooking }) {
       createdAt: new Date().toISOString(),
       name: form.name.trim(),
       phone: form.phone.trim(),
+      email: form.email.trim(),
       courtId: form.courtId,
-      courtLabel: COURTS.find((court) => court.id === form.courtId).label,
+      courtLabel: form.courtLabel,
       date: form.date,
       slots: [...form.slots].sort(),
       hours: form.slots.length,

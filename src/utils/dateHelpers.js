@@ -49,18 +49,28 @@ export function formatLongDate(iso) {
   return `${WEEKDAYS_SHORT[date.getDay()]}, ${MONTHS_SHORT[m - 1]} ${d}`;
 }
 
-/** "18:00" -> "6:00 PM" */
+/** "18:00" -> "6:00 PM"
+ * Hours >= 24 are 12AM–5AM of the following day.
+ */
 export function slotLabel(slot) {
   const [h, mi] = slot.split(':').map(Number);
-  const suffix = h < 12 ? 'AM' : 'PM';
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  const displayHour = h >= 24 ? h - 24 : h;
+  const suffix = displayHour < 12 ? 'AM' : 'PM';
+  const hour12 = displayHour % 12 === 0 ? 12 : displayHour % 12;
   return `${hour12}:${String(mi).padStart(2, '0')} ${suffix}`;
 }
 
-/** Build the hourly slot list, e.g. ["06:00", "07:00", ...]. */
+/** Build the hourly slot list for a 24-hour cycle from 6AM to 6AM next day.
+ * e.g. ["06:00", "07:00", ..., "23:00", "00:00", ..., "05:00"].
+ */
 export function buildSlotTimes() {
   const slots = [];
-  for (let h = SLOT_START_HOUR; h < SLOT_END_HOUR; h += 1) {
+  // First day: 6AM to 11PM (hours 6–23)
+  for (let h = SLOT_START_HOUR; h < 24; h += 1) {
+    slots.push(`${String(h).padStart(2, '0')}:00`);
+  }
+  // Early morning next day: 12AM to 5AM (hours 0–5)
+  for (let h = 0; h < SLOT_START_HOUR; h += 1) {
     slots.push(`${String(h).padStart(2, '0')}:00`);
   }
   return slots;
